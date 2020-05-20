@@ -4,7 +4,7 @@ import datetime
 from datetime import datetime
 import calendar
 
-from market_analysis import market_analysis_find_engulfing_structure
+from market_analysis import *
 
 orderbook_url = "https://api.bybit.com/v2/public/orderBook/L2?symbol=BTCUSD"
 query_kline_url = "https://api.bybit.com/v2/public/kline/list?symbol=BTCUSD&interval=%d&limit=%d&from=%d"
@@ -101,7 +101,7 @@ def market_data_find_max_volume_in_batches(market_data, side):
 
     return (max_idx, min_idx)
 
-market_data = market_data_query_kline(15, 1000)
+market_data = market_data_query_kline(15, 2000)
 bullish_eng = market_analysis_find_engulfing_structure(market_data)
 
 for i in range(0, len(bullish_eng)):
