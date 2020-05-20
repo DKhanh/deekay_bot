@@ -4,15 +4,8 @@ import datetime
 from datetime import datetime
 import calendar
 
-from market_analysis import *
-
 orderbook_url = "https://api.bybit.com/v2/public/orderBook/L2?symbol=BTCUSD"
 query_kline_url = "https://api.bybit.com/v2/public/kline/list?symbol=BTCUSD&interval=%d&limit=%d&from=%d"
-
-buy_price = requests.get(orderbook_url).json()["result"][0]["price"]
-sell_price = requests.get(orderbook_url).json()["result"][1]["price"]
-print ("buy order:  " + buy_price)
-print ("sell order: " + sell_price)
 
 def market_data_get_1m_open_timestamp():
     timestamp = round(calendar.timegm(time.gmtime()))
@@ -32,12 +25,12 @@ def market_data_get_15m_open_timestamp():
     return int(m15_timestamp) 
 
 def market_data_get_open_timestamp(interval):
-    timestamp = round(calendar.timegm(time.gmtime()))
-    timestamp =  timestamp - (timestamp%60)
+    timestamp = calendar.timegm(time.gmtime())
+    timestamp = int(float(timestamp) - float(timestamp%60))
 
     timestamp = requests.get(query_kline_url % (interval, 1, timestamp-60*interval)).json()["result"][0]["open_time"]
     return timestamp
-    
+
 # Get market data from current timestamp
 def market_data_query_kline(interval, limit):
     total_batch = limit
@@ -101,8 +94,8 @@ def market_data_find_max_volume_in_batches(market_data, side):
 
     return (max_idx, min_idx)
 
-market_data = market_data_query_kline(15, 2000)
-bullish_eng = market_analysis_find_engulfing_structure(market_data)
-
-for i in range(0, len(bullish_eng)):
-    print(datetime.fromtimestamp(market_data["result"][bullish_eng[i]]["open_time"]))
+def market_data_get_current_price(interval):
+    buy_price = requests.get(orderbook_url).json()["result"][0]["price"]
+    sell_price = requests.get(orderbook_url).json()["result"][1]["price"]
+    print ("buy order:  " + buy_price)
+    print ("sell order: " + sell_price)
