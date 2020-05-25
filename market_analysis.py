@@ -1,3 +1,21 @@
+"""
+market_data = {   
+                "interval",
+                "limit",
+                "from",
+                "result": {   
+                    "interval" , 
+                    "open_time", 
+                    "open", 
+                    "high", 
+                    "low" , 
+                    "close", 
+                    "volume", 
+                    "turnover",
+                    "side" 
+                    }
+}        
+"""
 
 def market_analysis_find_engulfing_structure(market_data, trend = "bullish"):
     data = market_data["result"]
@@ -53,6 +71,32 @@ def market_analysis_find_engulfing_structure(market_data, trend = "bullish"):
     return return_data
 
 def market_analysis_find_demand_zone(market_data):
+    result = market_data["result"]
+    limit = market_data["limit"]
+    # start_timestamp = market_data["from"]
+    # interval = market_data["interval"]
+
+    
+
+    local_high = 0
+    local_low = 0
+    higher_high = 0
+    # lower_high = 0
+    lower_low = 0
+    # higher_low = 0
+
+    for i in range (0, limit):
+        if (result[i]["high"] > local_high):
+            if (result[i]["high"] < higher_high):
+                local_high = result[i]["high"]
+            else:
+                higher_high = result[i]["high"]
+        if (result[i]["low"] < local_low):
+            if (result[i]["low"] > lower_low):
+                local_low = result[i]["low"]
+            else:
+                lower_low = result[i]["low"]
+
     return 0
 
 def market_analysis_find_supply_zone(market_data):

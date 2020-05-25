@@ -10,6 +10,7 @@ import market_analysis as ma
 # [3]: bullish/bearish
 def main(argv):
     if (len(argv) < 4):
+        md.market_data_get_current_price()
         return 0
 
     interval = int(argv[1])
@@ -22,9 +23,20 @@ def main(argv):
         market_data = md.market_data_query_kline(interval, limit)
         engulfing = ma.market_analysis_find_engulfing_structure(market_data, trend)
 
-        for i in range(0, len(engulfing)):
-            print(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
+        # if bearish: 
+        #   + entry point: between open and low
+        #   + stop loss: above the high
+        # if bullish: 
+        #   + entry point: between close and high
+        #   + stop loss: below the low
 
+        for i in range(0, len(engulfing)):
+            print(str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
+            + " - open = " + str(market_data["result"][engulfing[i]]["open"])
+            + " - close = " + str(market_data["result"][engulfing[i]]["close"])
+            + " - high = " + str(market_data["result"][engulfing[i]]["high"])
+            + " - low = " + str(market_data["result"][engulfing[i]]["low"])
+            )
 
     return 0
 

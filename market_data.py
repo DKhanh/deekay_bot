@@ -94,7 +94,7 @@ def market_data_find_max_volume_in_batches(market_data, side):
 
     return (max_idx, min_idx)
 
-def market_data_get_current_price(interval):
+def market_data_get_current_price():
     buy_price = requests.get(orderbook_url).json()["result"][0]["price"]
     sell_price = requests.get(orderbook_url).json()["result"][1]["price"]
     print ("buy order:  " + buy_price)
