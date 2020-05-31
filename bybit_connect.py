@@ -196,7 +196,7 @@ class bybit_api:
             
         #self.cur_qty = self.get_max_qty(price)
         self.cur_qty = self.get_needed_qty(price, 25)
-        if (self.set_active_order(side, symbol, 'Limit', 1, price) == 'ok'):
+        if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
             return 'ok'
         else:
             return 'not_ok'

@@ -76,7 +76,7 @@ class MyStreamListener(tweepy.StreamListener):
         self.bybit = bybit_api(bybit_api_key, bybit_api_secret)
         self.close_price = 'None'
         self.order_price = 'None'
-        self.is_in_position = 'None'
+        self.pre_price = 0
 
     def parse_bot_data(self):
         coin = 'None'
@@ -116,7 +116,9 @@ class MyStreamListener(tweepy.StreamListener):
         
         if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
         (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
-            self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD')
+            if (result['price'] != self.pre_price):
+                self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD')
+                self.pre_price = result['price']
 
 
 
