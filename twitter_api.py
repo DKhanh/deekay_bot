@@ -1,17 +1,7 @@
-from __future__ import absolute_import, print_function
+#! /usr/bin/python3
 import tweepy
+from config import consumer_key, consumer_secret, access_token, access_token_secret
 from pprint import pprint
-
-consumer_key = ""
-consumer_secret = ""
-
-access_token = ""
-access_token_secret = ""
-
-# == OAuth Authentication ==
-#
-# This mode of authentication is the new preferred way
-# of authenticating with Twitter.
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
