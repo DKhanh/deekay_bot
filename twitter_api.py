@@ -1,11 +1,9 @@
 #! /usr/bin/python3
 import tweepy
-from config import consumer_key, consumer_secret, access_token, access_token_secret
+from config import consumer_key, consumer_secret, access_token, access_token_secret, bybit_api_key, bybit_api_secret
 from pprint import pprint
-
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth)
+import bybit_connect
+from bybit_connect import bybit_api
 
 #tweets = api.user_timeline(screen_name = "GainzyBot",count=400, tweet_mode ="extended")
 #pprint(vars(tweets[0])['full_text'])
@@ -56,11 +54,30 @@ api = tweepy.API(auth)
 #  pprint(vars(tweet)['full_text'])
 #  print(" ")
 
+#auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+#auth.set_access_token(access_token, access_token_secret)
+#api = tweepy.API(auth)
 
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
+
+screen_name = 'dkhanh1702'
+usr_id = '1264577597486198785'
 
 #@gainzybot => 1171769235829415939
 #@dkhanh1702 => 1264577597486198785
 class MyStreamListener(tweepy.StreamListener):
+    def __init__(self):
+        self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        self.auth.set_access_token(access_token, access_token_secret)
+        self.api = tweepy.API(self.auth)
+        
+        self.bybit = bybit_api(bybit_api_key, bybit_api_secret)
+        self.close_price = 'None'
+        self.order_price = 'None'
+        self.is_in_position = 'None'
+
     def parse_bot_data(self):
         coin = 'None'
         symbol = 'None'
@@ -68,7 +85,7 @@ class MyStreamListener(tweepy.StreamListener):
         price = 0
         cur_balance = 0
         pre_balance = 0 
-        tweets = api.user_timeline(screen_name = "gainzybot",count=400, tweet_mode ="extended")
+        tweets = self.api.user_timeline(screen_name = "dkhanh1702", count=400, tweet_mode ="extended")
 
         first_split = str(vars(tweets[0])['full_text']).split('\n')
         coin = first_split[0].split(' ')[0]
@@ -96,14 +113,17 @@ class MyStreamListener(tweepy.StreamListener):
         result = self.parse_bot_data()
         print(result)
         print("")
-        #pprint(vars(tweets[2])['full_text'])
-        #pprint(vars(tweets[3])['full_text'])
+        
+        if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
+        (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
+            self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD')
 
 
-tweets = api.user_timeline(screen_name = "GainzyBot",count=400, tweet_mode ="extended")
+
+tweets = api.user_timeline(screen_name = "dkhanh1702", count=400, tweet_mode ="extended")
 pprint(vars(tweets[0])['full_text'])
 print("")
 
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
-myStream.filter(follow=["1171769235829415939"]) #GainzyBot
+myStream.filter(follow=["1264577597486198785"]) #GainzyBot

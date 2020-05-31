@@ -8,6 +8,7 @@ from bravado.swagger_model import load_file
 import json
 
 from config import bybit_api_key, bybit_api_secret
+import market_data
 
 #
 # # # Get server time
@@ -95,7 +96,7 @@ from config import bybit_api_key, bybit_api_secret
 # print(client.LinearKline.LinearKline_markPrice(symbol="BTCUSDT", interval="m", limit=10, **{'from':1}).result())
 #
 
-class bybit_class:
+class bybit_api:
     def __init__(self, api_key, api_secret):
         self.host = 'https://api.bybit.com'
 
@@ -145,10 +146,6 @@ class bybit_class:
     def get_account_position(self):
         return self.client.Positions.Positions_myPosition().result()
 
-    def set_active_order(self, side, symbol, type, qty, price):
-        # print(client.Order.Order_new(side="Buy",symbol="BTCUSD",order_type="Limit",qty=1,price=8300,time_in_force="GoodTillCancel").result())
-        return self.client.Order.Order_new(side=side,symbol=symbol,order_type=type,qty=1,price=price,time_in_force="GoodTillCancel").result()
-
     def get_active_order(self):
         return self.client.Order.Order_getOrders().result()
 
@@ -168,6 +165,10 @@ class bybit_class:
         #print(client.Positions.Positions_tradingStop(symbol="BTCUSD",stop_loss="8100").result())
         return self.client.Positions.Positions_tradingStop(symbol=symbol,stop_loss=stop_loss).result()
         
+    def set_active_order(self, side, symbol, type, qty, price):
+        # print(client.Order.Order_new(side="Buy",symbol="BTCUSD",order_type="Limit",qty=1,price=8300,time_in_force="GoodTillCancel").result())
+        return self.client.Order.Order_new(side=side,symbol=symbol,order_type=type,qty=1,price=price,time_in_force="GoodTillCancel").result()[0]['ret_msg']
+        
     def get_max_qty(self, price):
         self.cur_balance = round(float(self.client.Wallet.Wallet_getRecords().result()[0]['result']['data'][0]['wallet_balance']), 5)
         self.cur_balance = self.cur_balance*float(0.98)
@@ -176,9 +177,30 @@ class bybit_class:
         return round((round(float(self.cur_balance*tmp_price))-1)*self.cur_leverage)
         
     def get_needed_qty(self, price, percent):
-        if (percent > 1) & (percent < 100):
+        if (percent >= 1) & (percent <= 100):
           return round(float((self.get_max_qty(price)*percent)/100))
+          
+    def place_active_order(self, side, symbol, price):
+        self.cur_qty = self.get_max_qty(price)
+        if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
+            return 'ok'
+        else:
+            return 'not_ok'
         
+    def place_active_order_immediately(self, side, symbol):
+        market_price = market_data.market_data_get_current_price()
+        if (side == 'Buy'):
+            price = str(float(market_price[0])+10)
+        else: #(side == 'Sell')
+            price = str(float(market_price[1])-10)
+            
+        #self.cur_qty = self.get_max_qty(price)
+        self.cur_qty = self.get_needed_qty(price, 25)
+        if (self.set_active_order(side, symbol, 'Limit', 1, price) == 'ok'):
+            return 'ok'
+        else:
+            return 'not_ok'
+
     def test_func(self):
       return self.client.Positions.Positions_myPosition().result()[0]['result'][0]['effective_leverage']
         
@@ -187,12 +209,12 @@ class bybit_class:
 #print(bybit_obj.get_server_time())
 # bybit_obj.set_account_leverage('BTCUSD', '1')
 # bybit_obj.get_orderbook('BTCUSD')
-#bybit_obj.set_active_order('Sell', 'BTCUSD', 'Limit', '1', '9425')
+#print(bybit_obj.place_active_order_immediately('Sell', 'BTCUSD'))
 #bybit_obj.set_trading_stop('BTCUSD', '9000')
 #bybit_obj.set_active_order('Sell', 'BTCUSD', 'Limit', '1', '9525')
 #bybit_obj.set_active_order('Sell', 'BTCUSD', 'Limit', '2', '9526')
 #bybit_obj.set_active_order('Buy', 'BTCUSD', 'Limit', '3', '9506')
-#print(bybit_obj.get_max_qty('9600'))
+#print(bybit_obj.get_needed_qty('9600', 100))
 #bybit_obj.set_account_leverage('BTCUSD', '3')
 #print(bybit_obj.test_func())
 

@@ -99,3 +99,4 @@ def market_data_get_current_price():
     sell_price = requests.get(orderbook_url).json()["result"][1]["price"]
     print ("buy order:  " + buy_price)
     print ("sell order: " + sell_price)
+    return (buy_price, sell_price)
