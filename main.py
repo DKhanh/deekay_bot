@@ -2,8 +2,22 @@
 import sys
 from datetime import datetime
 import calendar
+import time
 import market_data as md
 import market_analysis as ma
+import twitter_api
+
+def access_twitter_bot():
+    count = 0
+    twitter = twitter_api()
+    while (count <= 100):
+        if (twitter.establish_connection() == False):
+            count = count + 1
+            print("There are ERROR on twitter stream!! Trying to reconnect: " + str(count))
+            time.sleep(1)
+            
+    if (count > 100):
+        return False
 
 # [1]: interval
 # [2]: limit
@@ -11,6 +25,7 @@ import market_analysis as ma
 def main(argv):
     if (len(argv) < 4):
         md.market_data_get_current_price()
+        access_twitter_bot()
         return 0
 
     interval = int(argv[1])

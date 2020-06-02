@@ -167,7 +167,7 @@ class bybit_api:
         
     def set_active_order(self, side, symbol, type, qty, price):
         # print(client.Order.Order_new(side="Buy",symbol="BTCUSD",order_type="Limit",qty=1,price=8300,time_in_force="GoodTillCancel").result())
-        return self.client.Order.Order_new(side=side,symbol=symbol,order_type=type,qty=1,price=price,time_in_force="GoodTillCancel").result()[0]['ret_msg']
+        return self.client.Order.Order_new(side=side,symbol=symbol,order_type=type,qty=qty,price=price,time_in_force="GoodTillCancel").result()[0]['ret_msg']
         
     def get_max_qty(self, price):
         self.cur_balance = round(float(self.client.Wallet.Wallet_getRecords().result()[0]['result']['data'][0]['wallet_balance']), 5)
@@ -179,6 +179,12 @@ class bybit_api:
     def get_needed_qty(self, price, percent):
         if (percent >= 1) & (percent <= 100):
           return round(float((self.get_max_qty(price)*percent)/100))
+        
+    def get_current_position_info(self):
+        cur_qty = round(float(self.client.Positions.Positions_myPosition().result()[0]['result'][0]['size']))
+        # if not in any position, side = None
+        cur_side = self.client.Positions.Positions_myPosition().result()[0]['result'][0]['side']
+        return (cur_side, cur_qty)
           
     def place_active_order(self, side, symbol, price):
         self.cur_qty = self.get_max_qty(price)
@@ -187,25 +193,44 @@ class bybit_api:
         else:
             return 'not_ok'
         
-    def place_active_order_immediately(self, side, symbol):
+    def place_active_order_immediately(self, side, symbol, percent):
+        market_price = market_data.market_data_get_current_price()
+        if (side == 'Buy'):
+            price = str(float(market_price[0])+10)
+        else: #(side == 'Sell')
+            price = str(float(market_price[1])-10)
+        
+        (pos_qty, pos_side) = self.get_current_position_info()
+        if ((pos_side != 'None') & (pos_side !=  side)):
+            self.set_active_order(side, symbol, 'Limit', pos_qty, price)
+            
+        #self.cur_qty = self.get_max_qty(price)
+        self.cur_qty = self.get_needed_qty(price, percent)
+        if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
+            return (price, self.cur_qty)
+        else:
+            return 'not_ok'
+            
+        
+    def close_active_order_immediately(self, side, symbol, qty):
         market_price = market_data.market_data_get_current_price()
         if (side == 'Buy'):
             price = str(float(market_price[0])+10)
         else: #(side == 'Sell')
             price = str(float(market_price[1])-10)
             
-        #self.cur_qty = self.get_max_qty(price)
-        self.cur_qty = self.get_needed_qty(price, 25)
-        if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
-            return 'ok'
+        # self.cur_qty = self.get_max_qty(price)
+        # self.cur_qty = self.get_needed_qty(price, 25)
+        if (self.set_active_order(side, symbol, 'Limit', qty, price) == 'ok'):
+            return (price, qty)
         else:
             return 'not_ok'
 
     def test_func(self):
-      return self.client.Positions.Positions_myPosition().result()[0]['result'][0]['effective_leverage']
+      return self.client.Positions.Positions_myPosition().result()[0]['result'][0]['size']
         
         
-#bybit_obj = bybit_class(bybit_api_key, bybit_api_secret)
+#bybit_obj = bybit_api(bybit_api_key, bybit_api_secret)
 #print(bybit_obj.get_server_time())
 # bybit_obj.set_account_leverage('BTCUSD', '1')
 # bybit_obj.get_orderbook('BTCUSD')
@@ -216,6 +241,6 @@ class bybit_api:
 #bybit_obj.set_active_order('Buy', 'BTCUSD', 'Limit', '3', '9506')
 #print(bybit_obj.get_needed_qty('9600', 100))
 #bybit_obj.set_account_leverage('BTCUSD', '3')
-#print(bybit_obj.test_func())
+#print((bybit_obj.test_func()))
 
 
