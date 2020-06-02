@@ -7,7 +7,7 @@ from bravado.swagger_model import load_file
 
 import json
 
-from config import bybit_api_key, bybit_api_secret
+from config import bybit_api_key, bybit_api_secret, bybit_host, bybit_pos_percent
 import market_data
 
 #
@@ -98,7 +98,7 @@ import market_data
 
 class bybit_api:
     def __init__(self, api_key, api_secret):
-        self.host = 'https://api.bybit.com'
+        self.host = bybit_host
 
         self.api_key = api_key
         self.api_secret = api_secret
@@ -178,10 +178,16 @@ class bybit_api:
         
     def get_needed_qty(self, price, percent):
         if (percent >= 1) & (percent <= 100):
-          return round(float((self.get_max_qty(price)*percent)/100))
+            return round(float((self.get_max_qty(price)*percent)/100))
+        else:
+            return round(float((self.get_max_qty(price)*90)/100))
         
     def get_current_position_info(self):
-        cur_qty = round(float(self.client.Positions.Positions_myPosition().result()[0]['result'][0]['size']))
+        cur_qty = 0
+        tmp_qty = self.client.Positions.Positions_myPosition().result()[0]['result'][0]['size']
+        if (tmp_qty != 'None'):
+            cur_qty = round(float(tmp_qty))
+
         # if not in any position, side = None
         cur_side = self.client.Positions.Positions_myPosition().result()[0]['result'][0]['side']
         return (cur_side, cur_qty)
@@ -197,19 +203,24 @@ class bybit_api:
         market_price = market_data.market_data_get_current_price()
         if (side == 'Buy'):
             price = str(float(market_price[0])+10)
+            tmp_side = 'Sell'
         else: #(side == 'Sell')
             price = str(float(market_price[1])-10)
+            tmp_side = 'Buy'
         
-        (pos_qty, pos_side) = self.get_current_position_info()
+        (pos_side, pos_qty) = self.get_current_position_info()
         if ((pos_side != 'None') & (pos_side !=  side)):
             self.set_active_order(side, symbol, 'Limit', pos_qty, price)
+        elif ((pos_side != 'None') & (pos_side ==  side)):
+            self.set_active_order(tmp_side, symbol, 'Limit', pos_qty, price)
             
         #self.cur_qty = self.get_max_qty(price)
         self.cur_qty = self.get_needed_qty(price, percent)
         if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
-            return (price, self.cur_qty)
+            (pos_side, pos_qty) = self.get_current_position_info()
+            return (pos_side, pos_qty)
         else:
-            return 'not_ok'
+            return (0, 0)
             
         
     def close_active_order_immediately(self, side, symbol, qty):

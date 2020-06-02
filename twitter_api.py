@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 import tweepy
-from config import consumer_key, consumer_secret, access_token, access_token_secret, bybit_api_key, bybit_api_secret
+from config import bybit_api_key, bybit_api_secret, bybit_pos_percent
+from config import consumer_key, consumer_secret, access_token, access_token_secret, screen_name, usr_id
 from pprint import pprint
 import bybit_connect
 from bybit_connect import bybit_api
@@ -9,11 +10,6 @@ from bybit_connect import bybit_api
 #auth.set_access_token(access_token, access_token_secret)
 #api = tweepy.API(auth)
 
-screen_name = "gainzybot"
-usr_id = "1171769235829415939"
-
-#@gainzybot => 1171769235829415939
-#@dkhanh1702 => 1264577597486198785
 class MyStreamListener(tweepy.StreamListener):
     def __init__(self):
         self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -70,11 +66,11 @@ class MyStreamListener(tweepy.StreamListener):
         if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
         (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
             if (result['signal'] != self.pre_side):
-                self.pre_side = result['signal']
-                (self.cur_price, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', 25)
+                (self.cur_price, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
                 print('current price: ' + str(self.cur_price))
                 print('current qty: ' + str(self.cur_qty))
-
+                if ((self.cur_price != 0) & (self.cur_qty != 0)):
+                    self.pre_side = result['signal']
 
 class twitter_api():
     def __init__(self):
@@ -92,5 +88,5 @@ class twitter_api():
 #myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 #if (myStream.filter(follow=[usr_id]) == False):
     
-twitter = twitter_api()
-twitter.establish_connection()
+#twitter = twitter_api()
+#twitter.establish_connection()

@@ -6,6 +6,7 @@ import time
 import market_data as md
 import market_analysis as ma
 import twitter_api
+from twitter_api import twitter_api
 
 def access_twitter_bot():
     count = 0
