@@ -1,6 +1,7 @@
 #! /usr/bin/python
 import sys
-from datetime import datetime
+import logging
+from datetime import datetime, date
 import calendar
 import time
 import market_data as md
@@ -14,7 +15,8 @@ def access_twitter_bot():
     while (count <= 100):
         if (twitter.establish_connection() == False):
             count = count + 1
-            print("There are ERROR on twitter stream!! Trying to reconnect: " + str(count))
+            #print("There are ERROR on twitter stream!! Trying to reconnect: " + str(count))
+            logging.error("There are ERROR on twitter stream!! Trying to reconnect: " + str(count))
             time.sleep(1)
             
     if (count > 100):
@@ -47,7 +49,12 @@ def main(argv):
         #   + stop loss: below the low
 
         for i in range(0, len(engulfing)):
-            print(str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
+#            print(str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
+#            + " - open = " + str(market_data["result"][engulfing[i]]["open"])
+#            + " - close = " + str(market_data["result"][engulfing[i]]["close"])
+#            + " - high = " + str(market_data["result"][engulfing[i]]["high"])
+#            + " - low = " + str(market_data["result"][engulfing[i]]["low"])
+            logging.info(str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
             + " - open = " + str(market_data["result"][engulfing[i]]["open"])
             + " - close = " + str(market_data["result"][engulfing[i]]["close"])
             + " - high = " + str(market_data["result"][engulfing[i]]["high"])
@@ -57,4 +64,7 @@ def main(argv):
     return 0
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, filename="logfile_" + str(date.today()), filemode="a+",
+                        format="%(asctime)-15s %(levelname)-8s %(message)s")
+    logging.info("hello")
     main(sys.argv)

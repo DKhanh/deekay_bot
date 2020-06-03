@@ -3,6 +3,7 @@ import time
 import datetime 
 from datetime import datetime
 import calendar
+import logging
 
 orderbook_url = "https://api.bybit.com/v2/public/orderBook/L2?symbol=BTCUSD"
 query_kline_url = "https://api.bybit.com/v2/public/kline/list?symbol=BTCUSD&interval=%d&limit=%d&from=%d"
@@ -97,6 +98,8 @@ def market_data_find_max_volume_in_batches(market_data, side):
 def market_data_get_current_price():
     buy_price = requests.get(orderbook_url).json()["result"][0]["price"]
     sell_price = requests.get(orderbook_url).json()["result"][1]["price"]
-    print ("buy order:  " + buy_price)
-    print ("sell order: " + sell_price)
+#    print ("buy order:  " + buy_price)
+#    print ("sell order: " + sell_price)
+    logging.info ("buy order:  " + buy_price)
+    logging.info ("sell order: " + sell_price)
     return (buy_price, sell_price)

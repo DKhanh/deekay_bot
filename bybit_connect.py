@@ -9,91 +9,92 @@ import json
 
 from config import bybit_api_key, bybit_api_secret, bybit_host, bybit_pos_percent
 import market_data
+import logging
 
 #
 # # # Get server time
-# print(client.Common.Common_get().result()[0])
+# logging.info(client.Common.Common_get().result()[0])
 # #
 # # # Get Symbol lists
-# print(client.Symbol.Symbol_get().result()[0]["result"][0])
+# logging.info(client.Symbol.Symbol_get().result()[0]["result"][0])
 # #
 # # # Change account user leverage
-# print(client.Positions.Positions_saveLeverage(symbol="BTCUSD", leverage="14").result())
+# logging.info(client.Positions.Positions_saveLeverage(symbol="BTCUSD", leverage="14").result())
 # #
 # # # Query account positions
-# print(client.Positions.Positions_myPosition().result())
+# logging.info(client.Positions.Positions_myPosition().result())
 # #
 # # #Place an Active Order
-# print(client.Order.Order_new(side="Buy",symbol="BTCUSD",order_type="Limit",qty=1,price=8300,time_in_force="GoodTillCancel").result())
+# logging.info(client.Order.Order_new(side="Buy",symbol="BTCUSD",order_type="Limit",qty=1,price=8300,time_in_force="GoodTillCancel").result())
 # #
 # # #Get Active Order
-# print(client.Order.Order_getOrders().result())
+# logging.info(client.Order.Order_getOrders().result())
 # #
 # # #Cancel Active Order
-# print(client.Order.Order_cancel(order_id="baaa9182-86e1-42aa-8420-da6428346b30").result())
+# logging.info(client.Order.Order_cancel(order_id="baaa9182-86e1-42aa-8420-da6428346b30").result())
 # #
 # # # Place Conditional Order
-# print(client.Conditional.Conditional_new(order_type="Limit",side="Buy",symbol="BTCUSD",qty=1,price=8100,base_price=8300,stop_px=8150,time_in_force="GoodTillCancel").result())
+# logging.info(client.Conditional.Conditional_new(order_type="Limit",side="Buy",symbol="BTCUSD",qty=1,price=8100,base_price=8300,stop_px=8150,time_in_force="GoodTillCancel").result())
 # #
 # # #Get Conditional Order
-# print(client.Conditional.Conditional_getOrders().result())
+# logging.info(client.Conditional.Conditional_getOrders().result())
 # #
 # # #Cancel conditional order
-# print(client.Conditional.Conditional_cancel(stop_order_id="53c8e250-252b-47f7-a768-5f5456b64e17").result())
+# logging.info(client.Conditional.Conditional_cancel(stop_order_id="53c8e250-252b-47f7-a768-5f5456b64e17").result())
 # #
 # # #changeMargin
-# print(client.Positions.Positions_changeMargin(symbol="BTCUSD", margin="10").result())
+# logging.info(client.Positions.Positions_changeMargin(symbol="BTCUSD", margin="10").result())
 # #
 # # #Set Trading-Stop
-# print(client.Positions.Positions_tradingStop(symbol="BTCUSD",stop_loss="8100").result())
+# logging.info(client.Positions.Positions_tradingStop(symbol="BTCUSD",stop_loss="8100").result())
 # #
 # # #Get wallet fund records
-# print(client.Wallet.Wallet_getRecords().result())
+# logging.info(client.Wallet.Wallet_getRecords().result())
 # #
 # # #Get the Last Funding Rate
-# print(client.Funding.Funding_myLastFee(symbol="BTCUSD").result())
+# logging.info(client.Funding.Funding_myLastFee(symbol="BTCUSD").result())
 # #
 # # #Get My Last Funding Fee
-# # print(client.Funding.Funding_getRate(symbol="BTCUSD").result())
+# # logging.info(client.Funding.Funding_getRate(symbol="BTCUSD").result())
 # #
 # # #Get Predicted Funding Rate and Funding Fee
-# print(client.Funding.Funding_predicted(symbol="BTCUSD").result())
+# logging.info(client.Funding.Funding_predicted(symbol="BTCUSD").result())
 # #
 # # #Get the trade records of a order
-# print(client.Execution.Execution_getTrades(order_id="24d6c1b1-e2aa-4ef0-8d73-55b751710a0c").result())
+# logging.info(client.Execution.Execution_getTrades(order_id="24d6c1b1-e2aa-4ef0-8d73-55b751710a0c").result())
 # #
 # # #Get Orderbook
-# print(client.Market.Market_orderbook(symbol="BTCUSD").result())
+# logging.info(client.Market.Market_orderbook(symbol="BTCUSD").result())
 #
 # #Latest information for symbol
-# print(client.Market.Market_symbolInfo().result())
+# logging.info(client.Market.Market_symbolInfo().result())
 #
-# print(client.LinearOrder.LinearOrder_new(side="Sell",symbol="BTCUSDT",order_type="Limit",qty=0.22,price=10000,time_in_force="GoodTillCancel",reduce_only=False, close_on_trigger=False).result())
-# print(client.LinearOrder.LinearOrder_cancel(symbol="BTCUSDT", order_id="87d8a4ed-dc9d-41c9-8dac-6e3c51356645").result())
+# logging.info(client.LinearOrder.LinearOrder_new(side="Sell",symbol="BTCUSDT",order_type="Limit",qty=0.22,price=10000,time_in_force="GoodTillCancel",reduce_only=False, close_on_trigger=False).result())
+# logging.info(client.LinearOrder.LinearOrder_cancel(symbol="BTCUSDT", order_id="87d8a4ed-dc9d-41c9-8dac-6e3c51356645").result())
 
-# print(client.LinearOrder.LinearOrder_getOrders(symbol="BTCUSDT").result())
+# logging.info(client.LinearOrder.LinearOrder_getOrders(symbol="BTCUSDT").result())
 
-# print(client.LinearOrder.LinearOrder_query(symbol="BTCUSDT", order_id="87d8a4ed-dc9d-41c9-8dac-6e3c51356645").result())
-# print(client.LinearOrder.LinearOrder_cancelAll(symbol="BTCUSDT").result())
+# logging.info(client.LinearOrder.LinearOrder_query(symbol="BTCUSDT", order_id="87d8a4ed-dc9d-41c9-8dac-6e3c51356645").result())
+# logging.info(client.LinearOrder.LinearOrder_cancelAll(symbol="BTCUSDT").result())
 #
-# print(client.LinearConditional.LinearConditional_new(stop_px=9989, side="Sell",symbol="BTCUSDT",order_type="Limit",qty=0.22,base_price=9900, price=10000,time_in_force="GoodTillCancel",reduce_only=False, close_on_trigger=False).result())
-# print(client.LinearConditional.LinearConditional_cancel(symbol="BTCUSDT", stop_order_id="52095ff7-b080-498e-b3a4-8b3e76c42f5e").result())
-# print(client.LinearConditional.LinearConditional_cancelAll(symbol="BTCUSDT").result())
-# print(client.LinearConditional.LinearConditional_getOrders(symbol="BTCUSDT").result())
-# print(client.LinearConditional.LinearConditional_query(symbol="BTCUSDT",stop_order_id="eed0915f-d2e5-4e7d-9908-1c73d792c659").result())
-# print(client.LinearPositions.LinearPositions_setAutoAddMargin(symbol="BTCUSDT", side="Sell", auto_add_margin=False).result())
-# print(client.LinearPositions.LinearPositions_switchIsolated(symbol="BTCUSDT",is_isolated=True, buy_leverage=1, sell_leverage=1).result())
-# print(client.LinearPositions.LinearPositions_saveLeverage(symbol="BTCUSDT", buy_leverage=10, sell_leverage=10).result())
-# print(client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result())
-# print(client.LinearPositions.LinearPositions_tradingStop(symbol="BTCUSDT", side="Buy", take_profit=10).result())
-# print(client.LinearPositions.LinearPositions_changeMargin(symbol="BTCUSDT", side="Buy", margin=0.01).result())
-# print(client.LinearExecution.LinearExecution_getTrades(symbol="BTCUSDT").result())
-# print(client.LinearPositions.LinearPositions_closePnlRecords(symbol="BTCUSDT").result())
-# print(client.LinearFunding.LinearFunding_myLastFee(symbol="BTCUSDT").result())
-# print(client.LinearFunding.LinearFunding_prevRate(symbol="BTCUSDT").result())
-# print(client.LinearFunding.LinearFunding_predicted(symbol="BTCUSDT").result())
-# print(client.LinearKline.LinearKline_get(symbol="BTCUSDT", interval="m", limit=10, **{'from':1}).result())
-# print(client.LinearKline.LinearKline_markPrice(symbol="BTCUSDT", interval="m", limit=10, **{'from':1}).result())
+# logging.info(client.LinearConditional.LinearConditional_new(stop_px=9989, side="Sell",symbol="BTCUSDT",order_type="Limit",qty=0.22,base_price=9900, price=10000,time_in_force="GoodTillCancel",reduce_only=False, close_on_trigger=False).result())
+# logging.info(client.LinearConditional.LinearConditional_cancel(symbol="BTCUSDT", stop_order_id="52095ff7-b080-498e-b3a4-8b3e76c42f5e").result())
+# logging.info(client.LinearConditional.LinearConditional_cancelAll(symbol="BTCUSDT").result())
+# logging.info(client.LinearConditional.LinearConditional_getOrders(symbol="BTCUSDT").result())
+# logging.info(client.LinearConditional.LinearConditional_query(symbol="BTCUSDT",stop_order_id="eed0915f-d2e5-4e7d-9908-1c73d792c659").result())
+# logging.info(client.LinearPositions.LinearPositions_setAutoAddMargin(symbol="BTCUSDT", side="Sell", auto_add_margin=False).result())
+# logging.info(client.LinearPositions.LinearPositions_switchIsolated(symbol="BTCUSDT",is_isolated=True, buy_leverage=1, sell_leverage=1).result())
+# logging.info(client.LinearPositions.LinearPositions_saveLeverage(symbol="BTCUSDT", buy_leverage=10, sell_leverage=10).result())
+# logging.info(client.LinearPositions.LinearPositions_myPosition(symbol="BTCUSDT").result())
+# logging.info(client.LinearPositions.LinearPositions_tradingStop(symbol="BTCUSDT", side="Buy", take_profit=10).result())
+# logging.info(client.LinearPositions.LinearPositions_changeMargin(symbol="BTCUSDT", side="Buy", margin=0.01).result())
+# logging.info(client.LinearExecution.LinearExecution_getTrades(symbol="BTCUSDT").result())
+# logging.info(client.LinearPositions.LinearPositions_closePnlRecords(symbol="BTCUSDT").result())
+# logging.info(client.LinearFunding.LinearFunding_myLastFee(symbol="BTCUSDT").result())
+# logging.info(client.LinearFunding.LinearFunding_prevRate(symbol="BTCUSDT").result())
+# logging.info(client.LinearFunding.LinearFunding_predicted(symbol="BTCUSDT").result())
+# logging.info(client.LinearKline.LinearKline_get(symbol="BTCUSDT", interval="m", limit=10, **{'from':1}).result())
+# logging.info(client.LinearKline.LinearKline_markPrice(symbol="BTCUSDT", interval="m", limit=10, **{'from':1}).result())
 #
 
 class bybit_api:
@@ -131,12 +132,12 @@ class bybit_api:
 
     def get_symbol_lists(self):
         # Get Symbol lists
-        print(self.client.Symbol.Symbol_get().result()[0]["result"][0])
+        logging.info(self.client.Symbol.Symbol_get().result()[0]["result"][0])
 
     def set_account_leverage(self, symbol, leverage):
         # Change account user leverage
-        print("Change account user leverage: symbol[" + str(symbol) + "] - leverage = " + str(leverage))
-        print(self.client.Positions.Positions_saveLeverage(symbol=symbol, leverage=leverage).result())
+        logging.info("Change account user leverage: symbol[" + str(symbol) + "] - leverage = " + str(leverage))
+        logging.info(self.client.Positions.Positions_saveLeverage(symbol=symbol, leverage=leverage).result())
         return (symbol, leverage)
 
     def get_account_position(self):
@@ -162,11 +163,11 @@ class bybit_api:
         return self.client.Positions.Positions_changeMargin(symbol=symbol, margin=margin).result()
 
     def set_trading_stop(self, symbol, stop_loss):
-        #print(client.Positions.Positions_tradingStop(symbol="BTCUSD",stop_loss="8100").result())
+        #logging.info(client.Positions.Positions_tradingStop(symbol="BTCUSD",stop_loss="8100").result())
         return self.client.Positions.Positions_tradingStop(symbol=symbol,stop_loss=stop_loss).result()
         
     def set_active_order(self, side, symbol, type, qty, price):
-        # print(client.Order.Order_new(side="Buy",symbol="BTCUSD",order_type="Limit",qty=1,price=8300,time_in_force="GoodTillCancel").result())
+        # logging.info(client.Order.Order_new(side="Buy",symbol="BTCUSD",order_type="Limit",qty=1,price=8300,time_in_force="GoodTillCancel").result())
         return self.client.Order.Order_new(side=side,symbol=symbol,order_type=type,qty=qty,price=price,time_in_force="GoodTillCancel").result()[0]['ret_msg']
         
     def get_max_qty(self, price):
@@ -244,16 +245,16 @@ class bybit_api:
         
         
 #bybit_obj = bybit_api(bybit_api_key, bybit_api_secret)
-#print(bybit_obj.get_server_time())
+#logging.info(bybit_obj.get_server_time())
 # bybit_obj.set_account_leverage('BTCUSD', '1')
 # bybit_obj.get_orderbook('BTCUSD')
-#print(bybit_obj.place_active_order_immediately('Sell', 'BTCUSD'))
+#logging.info(bybit_obj.place_active_order_immediately('Sell', 'BTCUSD'))
 #bybit_obj.set_trading_stop('BTCUSD', '9000')
 #bybit_obj.set_active_order('Sell', 'BTCUSD', 'Limit', '1', '9525')
 #bybit_obj.set_active_order('Sell', 'BTCUSD', 'Limit', '2', '9526')
 #bybit_obj.set_active_order('Buy', 'BTCUSD', 'Limit', '3', '9506')
-#print(bybit_obj.get_needed_qty('9600', 100))
+#logging.info(bybit_obj.get_needed_qty('9600', 100))
 #bybit_obj.set_account_leverage('BTCUSD', '3')
-#print((bybit_obj.test_func()))
+#logging.info((bybit_obj.test_func()))
 
 

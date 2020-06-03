@@ -5,6 +5,7 @@ from config import consumer_key, consumer_secret, access_token, access_token_sec
 from pprint import pprint
 import bybit_connect
 from bybit_connect import bybit_api
+import logging
 
 #auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 #auth.set_access_token(access_token, access_token_secret)
@@ -60,15 +61,15 @@ class MyStreamListener(tweepy.StreamListener):
     
     def on_status(self, status):
         result = self.parse_bot_data()
-        print(result)
-        print("")
+        logging.info(result)
+        logging.info("")
         
         if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
         (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
             if (result['signal'] != self.pre_side):
                 (self.cur_side, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
-                print('current side: ' + str(self.cur_side))
-                print('current qty: ' + str(self.cur_qty))
+                logging.info('current side: ' + str(self.cur_side))
+                logging.info('current qty: ' + str(self.cur_qty))
                 if (self.cur_qty != 0):
                     self.pre_side = result['signal']
 
@@ -76,8 +77,8 @@ class twitter_api():
     def __init__(self):
         self.myStreamListener = MyStreamListener()
         tweets = self.myStreamListener.api.user_timeline(screen_name = screen_name, count=400, tweet_mode ="extended")
-        pprint(vars(tweets[0])['full_text'])
-        print("")
+        logging.info(vars(tweets[0])['full_text'])
+        logging.info("")
         
     def establish_connection(self):
         myStream = tweepy.Stream(auth = self.myStreamListener.api.auth, listener=self.myStreamListener)
