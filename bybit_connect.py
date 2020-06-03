@@ -204,15 +204,17 @@ class bybit_api:
         if (side == 'Buy'):
             price = str(float(market_price[0])+10)
             tmp_side = 'Sell'
+            tmp_price = str(float(market_price[1])-10)
         else: #(side == 'Sell')
             price = str(float(market_price[1])-10)
             tmp_side = 'Buy'
+            tmp_price = str(float(market_price[1])+10)
         
         (pos_side, pos_qty) = self.get_current_position_info()
         if ((pos_side != 'None') & (pos_side !=  side)):
             self.set_active_order(side, symbol, 'Limit', pos_qty, price)
         elif ((pos_side != 'None') & (pos_side ==  side)):
-            self.set_active_order(tmp_side, symbol, 'Limit', pos_qty, price)
+            self.set_active_order(tmp_side, symbol, 'Limit', pos_qty, tmp_price)
             
         #self.cur_qty = self.get_max_qty(price)
         self.cur_qty = self.get_needed_qty(price, percent)
@@ -220,7 +222,7 @@ class bybit_api:
             (pos_side, pos_qty) = self.get_current_position_info()
             return (pos_side, pos_qty)
         else:
-            return (0, 0)
+            return ('None', 0)
             
         
     def close_active_order_immediately(self, side, symbol, qty):

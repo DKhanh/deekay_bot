@@ -66,10 +66,10 @@ class MyStreamListener(tweepy.StreamListener):
         if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
         (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
             if (result['signal'] != self.pre_side):
-                (self.cur_price, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
-                print('current price: ' + str(self.cur_price))
+                (self.cur_side, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
+                print('current side: ' + str(self.cur_side))
                 print('current qty: ' + str(self.cur_qty))
-                if ((self.cur_price != 0) & (self.cur_qty != 0)):
+                if (self.cur_qty != 0):
                     self.pre_side = result['signal']
 
 class twitter_api():
