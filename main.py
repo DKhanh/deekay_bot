@@ -8,19 +8,34 @@ import market_data as md
 import market_analysis as ma
 import twitter_api
 from twitter_api import twitter_api
+import threading
+
+
+class trading_thread(threading.Thread):
+    def __init__(self, thread_id, twitter):
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.twitter = twitter
+
+    def run(self):
+        try:
+            self.twitter.establish_connection()
+        finally:
+            logging.error("ERROR!!! Exiting thread - " + str(self.thread_id))
 
 def access_twitter_bot():
-    count = 0
+    thread_id = 0
     twitter = twitter_api()
-    while (count <= 100):
-        if (twitter.establish_connection() == False):
-            count = count + 1
-            #print("There are ERROR on twitter stream!! Trying to reconnect: " + str(count))
-            logging.error("There are ERROR on twitter stream!! Trying to reconnect: " + str(count))
-            time.sleep(1)
+    while (thread_id <= 100):
+        logging.info("Starting thread - " + str(thread_id))
+        thread = trading_thread(thread_id, twitter)
+        thread.start()
+        thread.join()
+        thread_id = thread_id + 1
+        time.sleep(1)
+        logging.info("Create next thread - " + str(thread_id))
             
-    if (count > 100):
-        return False
+    return False
 
 # [1]: interval
 # [2]: limit
@@ -36,7 +51,7 @@ def main(argv):
     return 0
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, filename="./log/logfile_" + str(date.today()), filemode="a+",
+    logging.basicConfig(level=logging.INFO, filename="./log/logfile_" + str(date.today()), filemode="a+",
                         format="%(asctime)-15s %(levelname)-8s %(message)s")
     logging.info("hello")
     main(sys.argv)
