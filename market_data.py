@@ -4,9 +4,10 @@ import datetime
 from datetime import datetime
 import calendar
 import logging
+from config import bybit_host
 
-orderbook_url = "https://api.bybit.com/v2/public/orderBook/L2?symbol=BTCUSD"
-query_kline_url = "https://api.bybit.com/v2/public/kline/list?symbol=BTCUSD&interval=%d&limit=%d&from=%d"
+orderbook_url = bybit_host + "/v2/public/orderBook/L2?symbol=BTCUSD"
+query_kline_url = bybit_host + "/v2/public/kline/list?symbol=BTCUSD&interval=%d&limit=%d&from=%d"
 
 def market_data_get_1m_open_timestamp():
     timestamp = round(calendar.timegm(time.gmtime()))

@@ -32,7 +32,7 @@ def access_twitter_bot():
         thread.start()
         thread.join()
         thread_id = thread_id + 1
-        time.sleep(1)
+        time.sleep(5)
         logging.info("Create next thread - " + str(thread_id))
             
     return False

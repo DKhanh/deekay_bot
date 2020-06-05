@@ -16,14 +16,18 @@ class MyStreamListener(tweepy.StreamListener):
         self.auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         self.auth.set_access_token(access_token, access_token_secret)
         self.api = tweepy.API(self.auth)
-        
+
+        tweets = self.api.user_timeline(screen_name = screen_name, count=400, tweet_mode ="extended")
+        self.pre_tweet = str(vars(tweets[0])['full_text']).split('\n')[0]
+
         self.bybit = bybit_api(bybit_api_key, bybit_api_secret)
         self.cur_price = 'None'
         self.cur_qty = 'None'
         self.cur_side = 'None'
         self.pre_side = 'None'
 
-    def parse_bot_data(self):
+    # start from number 0
+    def parse_bot_data(self, tweet_id):
         coin = 'None'
         symbol = 'None'
         signal = 'None'
@@ -32,7 +36,7 @@ class MyStreamListener(tweepy.StreamListener):
         pre_balance = 0 
         tweets = self.api.user_timeline(screen_name = screen_name, count=400, tweet_mode ="extended")
 
-        first_split = str(vars(tweets[0])['full_text']).split('\n')
+        first_split = str(vars(tweets[tweet_id])['full_text']).split('\n')
         coin = first_split[0].split(' ')[0]
         if ((coin != "$BTC") & (coin != '$ETH')):
             coin = first_split[0]
@@ -54,24 +58,42 @@ class MyStreamListener(tweepy.StreamListener):
                   'price': price, 'cur_balance': cur_balance, 'pre_balance': pre_balance}
         return result
     
+    def get_all_new_tweet(self):
+        tmp_id = 0
+        tweets = self.api.user_timeline(screen_name = screen_name, count=400, tweet_mode ="extended")
+        pre_tweet = str(vars(tweets[tmp_id])['full_text']).split('\n')[0]
+
+        while (pre_tweet != self.pre_tweet):
+            tmp_id = tmp_id + 1
+            pre_tweet = str(vars(tweets[tmp_id])['full_text']).split('\n')[0]
+        
+        self.pre_tweet = str(vars(tweets[0])['full_text']).split('\n')[0]
+        return tmp_id
+        
+    def place_order_from_tweet(self):
+        max_tweet = self.get_all_new_tweet()
+        for tweet_id in range (0, max_tweet):
+            result = self.parse_bot_data(tweet_id)
+            logging.info(result)
+            logging.info("")
+            
+            if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
+            (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
+                if (result['signal'] != self.pre_side):
+                    (self.cur_side, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
+                    logging.info('current side: ' + str(self.cur_side))
+                    logging.info('current qty: ' + str(self.cur_qty))
+                    if (self.cur_qty != 0):
+                        self.pre_side = result['signal']
+                        
+                    
     def on_error(self, status_code):
         if status_code == 420:
             #returning False in on_data disconnects the stream
             return False
     
     def on_status(self, status):
-        result = self.parse_bot_data()
-        logging.info(result)
-        logging.info("")
-        
-        if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
-        (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
-            if (result['signal'] != self.pre_side):
-                (self.cur_side, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
-                logging.info('current side: ' + str(self.cur_side))
-                logging.info('current qty: ' + str(self.cur_qty))
-                if (self.cur_qty != 0):
-                    self.pre_side = result['signal']
+        self.place_order_from_tweet()
 
 class twitter_api():
     def __init__(self):
