@@ -6,6 +6,7 @@ from pprint import pprint
 import bybit_connect
 from bybit_connect import bybit_api
 import logging
+import time
 
 #auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 #auth.set_access_token(access_token, access_token_secret)
@@ -93,6 +94,7 @@ class MyStreamListener(tweepy.StreamListener):
             return False
     
     def on_status(self, status):
+        time.sleep(5)
         self.place_order_from_tweet()
 
 class twitter_api():
