@@ -171,7 +171,8 @@ class bybit_api:
         return self.client.Order.Order_new(side=side,symbol=symbol,order_type=type,qty=qty,price=price,time_in_force="GoodTillCancel").result()[0]['ret_msg']
         
     def get_max_qty(self, price):
-        self.cur_balance = round(float(self.client.Wallet.Wallet_getRecords().result()[0]['result']['data'][0]['wallet_balance']), 5)
+        #self.cur_balance = round(float(self.client.Wallet.Wallet_getRecords().result()[0]['result']['data'][0]['wallet_balance']), 5)
+        self.cur_balance = round(float(self.client.Positions.Positions_myPosition().result()[0]['result'][0]['wallet_balance']), 5)
         self.cur_balance = self.cur_balance*float(0.98)
         self.cur_leverage = float(self.client.Positions.Positions_myPosition().result()[0]['result'][0]['effective_leverage'])
         tmp_price = float(price)
@@ -237,7 +238,14 @@ class bybit_api:
                     (order_data[i]['stop_order_status'] == 'Untriggered')):
                 stop_order_id = order_data[i]['stop_order_id']
                 self.client.Conditional.Conditional_cancel(stop_order_id=stop_order_id).result()
+
+    def cancel_all_active_order(self, symbol):
+        order_data = self.client.Order.Order_getOrders().result()[0]['result']['data'][0]
+        #pprint(order_data)
         
+        if ((order_data['symbol'] == symbol) & (order_data['order_status'] == 'New')):
+            self.client.Order.Order_cancelV2(symbol=symbol, order_id=order_data['order_id']).result()
+
     def place_active_order_immediately(self, side, symbol, percent):
         market_price = market_data.market_data_get_current_price()
         if (side == 'Buy'):
@@ -249,8 +257,9 @@ class bybit_api:
             tmp_side = 'Buy'
             tmp_price = str(float(market_price[1])+10)
         
-        pos_info = self.get_current_position_info(symbol)
         self.cancel_all_condition_order(symbol)
+        self.cancel_all_active_order(symbol)
+        pos_info = self.get_current_position_info(symbol)
         if ((pos_info['side'] != 'None') & (pos_info['side'] !=  side)):
             self.set_active_order(side, symbol, 'Limit', pos_info['size'], price)
         elif ((pos_info['side'] != 'None') & (pos_info['side'] ==  side)):
@@ -260,36 +269,39 @@ class bybit_api:
         self.cur_qty = self.get_needed_qty(price, percent)
         if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
             pos_info = self.get_current_position_info(symbol)
-            self.place_condition_order(pos_info)
+            #self.place_condition_order(pos_info)
             return (pos_info['side'], pos_info['size'])
         else:
             return ('None', 0)
             
 
-    def test_func(self):
+    def test_func(self, side, symbol):
         market_price = market_data.market_data_get_current_price()
-#        if (side == 'Buy'):
-        price = str(float(market_price[0])+10)
-        tmp_side = 'Sell'
-        tmp_price = str(float(market_price[1])-10)
-#        else: #(side == 'Sell')
-#            price = str(float(market_price[1])-10)
-#            tmp_side = 'Buy'
-#            tmp_price = str(float(market_price[1])+10)
-#        
-#        pos_info = self.get_current_position_info(symbol)
-#        self.cancel_all_condition_order(symbol)
-#        if ((pos_info['side'] != 'None') & (pos_info['side'] !=  side)):
-#            self.set_active_order(side, symbol, 'Limit', pos_info['size'], price)
-#        elif ((pos_info['side'] != 'None') & (pos_info['side'] ==  side)):
-#            self.set_active_order(tmp_side, symbol, 'Limit', pos_info['size'], tmp_price)
+        if (side == 'Buy'):
+            price = str(float(market_price[0])+10)
+            tmp_side = 'Sell'
+            tmp_price = str(float(market_price[1])-10)
+        else: #(side == 'Sell')
+            price = str(float(market_price[1])-10)
+            tmp_side = 'Buy'
+            tmp_price = str(float(market_price[1])+10)
+        
+        self.cancel_all_condition_order(symbol)
+        self.cancel_all_active_order(symbol)
+        pos_info = self.get_current_position_info(symbol)
+        if ((pos_info['side'] != 'None') & (pos_info['side'] !=  side)):
+            self.set_active_order(side, symbol, 'Limit', pos_info['size'], price)
+        elif ((pos_info['side'] != 'None') & (pos_info['side'] ==  side)):
+            self.set_active_order(tmp_side, symbol, 'Limit', pos_info['size'], tmp_price)
             
         #self.cur_qty = self.get_max_qty(price)
-        self.cur_qty = self.get_needed_qty(price, 90)
-        pprint(self.client.Order.Order_new(side='Buy',symbol='BTCUSD',order_type='Limit',qty=self.cur_qty,price=price,time_in_force="GoodTillCancel").result())
-        
-            #pos_info = self.get_current_position_info(symbol)
+        self.cur_qty = self.get_needed_qty(price, 99)
+        if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
+            pos_info = self.get_current_position_info(symbol)
             #self.place_condition_order(pos_info)
+            return (pos_info['side'], pos_info['size'])
+        else:
+            return ('None', 0)
             
       
         
@@ -304,7 +316,8 @@ class bybit_api:
 #bybit_obj.set_active_order('Buy', 'BTCUSD', 'Limit', '3', '9506')
 #logging.info(bybit_obj.get_needed_qty('9600', 100))
 #bybit_obj.set_account_leverage('BTCUSD', '3')
-#bybit_obj.test_func()
-#print(bybit_obj.get_max_qty(9773))
+#bybit_obj.test_func('Buy', 'BTCUSD')
+#bybit_obj.cancel_all_active_order('BTCUSD')
+#print(bybit_obj.get_max_qty(9325))
 
 
