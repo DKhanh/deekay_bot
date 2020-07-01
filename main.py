@@ -41,7 +41,7 @@ def access_twitter_bot():
 # [2]: limit
 # [3]: bullish/bearish
 def main(argv):
-    if (len(argv) < 4):
+    if (len(argv) == 1):
         md.market_data_get_current_price()
         access_twitter_bot()
         return 0

@@ -77,38 +77,40 @@ def market_analysis_find_engulfing_structure(market_data, trend = "bullish"):
     return return_data
 
 def market_analysis_export_engulfing_structure_from_main(argv):
-    if (len(argv) < 4):
+    if (len(argv) < 3):
         return 0
 
     interval = int(argv[1])
     limit = int(argv[2])
-    trend = str(argv[3])
 
     if ((interval > 0 & interval <  720) |
-        (limit > 0 & limit < 10000) |
-        ((trend == "bullish") | (trend == "bearish"))):
+        (limit > 0 & limit < 10000)):
         market_data = md.market_data_query_kline(interval, limit)
-        engulfing = market_analysis_find_engulfing_structure(market_data, trend)
-
+        
         # if bearish: 
         #   + entry point: between open and low
         #   + stop loss: above the high
         # if bullish: 
         #   + entry point: between close and high
         #   + stop loss: below the low
-
-        for i in range(0, len(engulfing)):
-#            print(str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
-#            + " - open = " + str(market_data["result"][engulfing[i]]["open"])
-#            + " - close = " + str(market_data["result"][engulfing[i]]["close"])
-#            + " - high = " + str(market_data["result"][engulfing[i]]["high"])
-#            + " - low = " + str(market_data["result"][engulfing[i]]["low"])
-            logging.info(str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
-            + " - open = " + str(market_data["result"][engulfing[i]]["open"])
-            + " - close = " + str(market_data["result"][engulfing[i]]["close"])
-            + " - high = " + str(market_data["result"][engulfing[i]]["high"])
-            + " - low = " + str(market_data["result"][engulfing[i]]["low"])
-            )
+   
+        for trend in ("bullish", "bearish"):
+            engulfing = market_analysis_find_engulfing_structure(market_data, trend)
+            print(trend.capitalize() + " [" + str(len(engulfing)) + "] " + "engulfing structure: ")
+            
+            for i in range(0, len(engulfing)):
+                print("    " + str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
+                + " - open = " + str(market_data["result"][engulfing[i]]["open"])
+                + " - close = " + str(market_data["result"][engulfing[i]]["close"])
+                + " - high = " + str(market_data["result"][engulfing[i]]["high"])
+                + " - low = " + str(market_data["result"][engulfing[i]]["low"])
+                )
+                # logging.info(str(datetime.fromtimestamp(market_data["result"][engulfing[i]]["open_time"]))
+                # + " - open = " + str(market_data["result"][engulfing[i]]["open"])
+                # + " - close = " + str(market_data["result"][engulfing[i]]["close"])
+                # + " - high = " + str(market_data["result"][engulfing[i]]["high"])
+                # + " - low = " + str(market_data["result"][engulfing[i]]["low"])
+                # )
 
     return 1
 
