@@ -7,7 +7,7 @@ from bravado.swagger_model import load_file
 
 import json
 
-from config import bybit_api_key, bybit_api_secret, bybit_host, bybit_pos_percent
+from config import bybit_api_key, bybit_api_secret, bybit_host, bybit_pos_percent, STOP_LOSS
 import market_data
 import logging
 from pprint import pprint
@@ -124,7 +124,15 @@ class bybit_api:
         else:
             self.client = SwaggerClient.from_url(self.spec_uri, config=self.config)
 
-        # self.client  = bybit.bybit(test=True, api_key=bybit_api_key, api_secret=bybit_secret_key)
+        self.side = 'None'
+        self.re_side = 'None'
+        self.symbol = 'None'
+        self.entry_qty = 0
+        self.stop_price = 0
+        self.target_price = 0
+        self.new_order_is_triggered = 1
+
+    # self.client  = bybit.bybit(test=True, api_key=bybit_api_key, api_secret=bybit_secret_key)
 
     def get_server_time(self):
         # Get server time
@@ -193,6 +201,9 @@ class bybit_api:
         elif (symbol == 'ETHUSD'):
             id = 1
             
+        if (self.client.Positions.Positions_myPosition().result()[0]['result'][id]['side'] == 'None'):
+            return result
+        
         pos_info = self.client.Positions.Positions_myPosition().result()[0]['result'][id]
         tmp_qty = pos_info['size']
         if (tmp_qty != 'None'):
@@ -214,14 +225,16 @@ class bybit_api:
         # no need set stop loss
         if (pos_info['side'] == 'Buy'):
             side = 'Sell'
-            stop_px = round(float(pos_info['entry_price']*1.02))
-            base_price = stop_px - 200
-            price = stop_px + 10
+            # Trigger price
+            stop_px = round(float(pos_info['entry_price']*0.99))+10
+            base_price = stop_px + 200
+            # Order price
+            price = stop_px - 5
         else:
             side = 'Buy'
-            stop_px = round(float(pos_info['entry_price']*0.98))
-            base_price = stop_px + 200
-            price = stop_px - 10
+            stop_px = round(float(pos_info['entry_price']*1.01))-10
+            base_price = stop_px - 200
+            price = stop_px + 5
         
         self.client.Conditional.Conditional_new(
             order_type="Limit", side=side, symbol=pos_info['symbol'], 
@@ -269,23 +282,33 @@ class bybit_api:
         self.cur_qty = self.get_needed_qty(price, percent)
         if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
             pos_info = self.get_current_position_info(symbol)
+            self.new_order_is_triggered = 0
             #self.place_condition_order(pos_info)
             return (pos_info['side'], pos_info['size'])
         else:
             return ('None', 0)
             
-
-    def test_func(self, side, symbol):
+    def place_active_order_with_stop(self, side, symbol, entry_price, reward_ratio):
+        rate = int(reward_ratio)
+        entry = int(entry_price)
+        
+        if (rate > 90):
+            return -1
+        
         market_price = market_data.market_data_get_current_price()
         if (side == 'Buy'):
             price = str(float(market_price[0])+10)
+            stop_price = round(float((entry*99)/100))
+            target_price = round(float((entry*(rate+100))/100))
             tmp_side = 'Sell'
             tmp_price = str(float(market_price[1])-10)
         else: #(side == 'Sell')
             price = str(float(market_price[1])-10)
+            stop_price = round(float((entry*101)/100))
+            target_price = round(float((entry*(100-rate))/100))
             tmp_side = 'Buy'
             tmp_price = str(float(market_price[1])+10)
-        
+
         self.cancel_all_condition_order(symbol)
         self.cancel_all_active_order(symbol)
         pos_info = self.get_current_position_info(symbol)
@@ -295,17 +318,47 @@ class bybit_api:
             self.set_active_order(tmp_side, symbol, 'Limit', pos_info['size'], tmp_price)
             
         #self.cur_qty = self.get_max_qty(price)
-        self.cur_qty = self.get_needed_qty(price, 99)
-        if (self.set_active_order(side, symbol, 'Limit', self.cur_qty, price) == 'ok'):
-            pos_info = self.get_current_position_info(symbol)
+        self.entry_qty = self.get_needed_qty(entry, 99)
+        if (self.set_active_order(side, symbol, 'Limit', self.entry_qty, entry) == 'ok'):
+            self.side = side
+            self.re_side = tmp_side
+            self.symbol = symbol
+            self.stop_price = stop_price
+            self.target_price = target_price
+            self.new_order_is_triggered = 0
+            
+            #pos_info = self.get_current_position_info(symbol)
             #self.place_condition_order(pos_info)
-            return (pos_info['side'], pos_info['size'])
+            return 0
         else:
-            return ('None', 0)
+            return -1
+
+    # this function has to be called after self.place_active_order_with_stop
+    def placing_stop_and_take_order(self, symbol):
+        pos_info = self.get_current_position_info(symbol)
+        if ((pos_info['side'] != 'None')  & (symbol == self.symbol) &
+            (pos_info['side'] == self.side) &
+            (pos_info['size'] == self.entry_qty) & (pos_info['symbol'] == self.symbol)):
+            self.place_condition_order(pos_info)
+            self.set_active_order(self.re_side, self.symbol, 'Limit', self.entry_qty, self.target_price)
+            return 0
+        return 1
+
+    # placing stop loss and take profit order
+    def test_func(self, side, symbol):
+        pos_info = self.get_current_position_info(symbol)
+        if ((pos_info['side'] != 'None')  & (pos_info['side'] == self.side) &
+            (pos_info['size'] == self.entry_qty) & (pos_info['symbol'] == self.symbol)):
+            self.place_condition_order(pos_info)
+            self.set_active_order(side, symbol, 'Limit', self.entry_qty, self.target_price)
+            
+        
+        
             
       
         
 #bybit_obj = bybit_api(bybit_api_key, bybit_api_secret)
+#bybit_obj.test_func('Buy', 'BTCUSD')
 #logging.info(bybit_obj.get_server_time())
 # bybit_obj.set_account_leverage('BTCUSD', '1')
 # bybit_obj.get_orderbook('BTCUSD')

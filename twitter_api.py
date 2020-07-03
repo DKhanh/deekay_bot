@@ -26,6 +26,8 @@ class MyStreamListener(tweepy.StreamListener):
         self.cur_qty = 'None'
         self.cur_side = 'None'
         self.pre_side = 'None'
+        
+        self.twitter_thread_status = 1
 
     # start from number 0
     def parse_bot_data(self, tweet_id):
@@ -78,14 +80,21 @@ class MyStreamListener(tweepy.StreamListener):
             logging.info(result)
             logging.info("")
             
-            if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
-            (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
-                if (result['signal'] != self.pre_side):
-                    (self.cur_side, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
-                    logging.info('current side: ' + str(self.cur_side))
-                    logging.info('current qty: ' + str(self.cur_qty))
-                    if (self.cur_qty != 0):
-                        self.pre_side = result['signal']
+            if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') &
+                 ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
+                (result['price'] != 0) ):
+                self.bybit.place_active_order_with_stop(result['signal'], 'BTCUSD', result['price'], '2')
+
+#            if ( (result['coin'] == '$BTC') & (result['symbol'] == 'XBTUSD') & ((result['signal'] == 'Buy') | (result['signal'] == 'Sell')) & 
+#            (result['price'] != 0) & (result['cur_balance'] != 0) & (result['pre_balance'] != 0) ):
+#                if (result['signal'] != self.pre_side):
+#                    #(self.cur_side, self.cur_qty) = self.bybit.place_active_order_immediately(result['signal'], 'BTCUSD', bybit_pos_percent)
+#                    self.place_active_order_with_stop(result['signal'], 'BTCUSD', result['price'], '2')
+#                    logging.info('current side: ' + str(self.cur_side))
+#                    logging.info('current qty: ' + str(self.cur_qty))
+#                    self.pre_side = result['signal']
+##                    if (self.cur_qty != 0):
+##                        self.pre_side = result['signal']
                         
                     
     def on_error(self, status_code):
